@@ -7,9 +7,30 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+// CORS configuration
+const corsOptions = {
+    origin: ['https://frontend-of-todo.netlify.app', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Security middleware
+app.use((req, res, next) => {
+    // Remove sensitive headers
+    res.removeHeader('X-Powered-By');
+    // Add security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+});
 
 // Test route
 app.get('/', (req, res) => {
