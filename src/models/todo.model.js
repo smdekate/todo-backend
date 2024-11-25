@@ -34,6 +34,11 @@ const todoSchema = new mongoose.Schema({
     isCompleted: {
         type: Boolean,
         default: false
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
 }, {
     timestamps: true
@@ -42,6 +47,7 @@ const todoSchema = new mongoose.Schema({
 // Add indexes for better query performance
 todoSchema.index({ status: 1, dueDate: 1 });
 todoSchema.index({ isCompleted: 1 });
+todoSchema.index({ user: 1 }); // Add index for user queries
 
 // Middleware to update status when isCompleted changes
 todoSchema.pre('save', function(next) {
@@ -57,8 +63,9 @@ todoSchema.methods.isOverdue = function() {
 };
 
 // Static method to find overdue todos
-todoSchema.statics.findOverdueTodos = function() {
+todoSchema.statics.findOverdueTodos = function(userId) {
     return this.find({
+        user: userId,
         isCompleted: false,
         dueDate: { $lt: new Date() }
     });
